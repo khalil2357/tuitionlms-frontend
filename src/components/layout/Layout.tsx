@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
+import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
 
 type LayoutProps = {
-  children: ReactNode;
+  children?: ReactNode;
 };
 
 const Layout = ({ children }: LayoutProps) => {
@@ -18,7 +19,7 @@ const Layout = ({ children }: LayoutProps) => {
       <div className="flex min-h-screen flex-col">
         <Navbar />
         <main id="main-content" className="flex-1">
-          {children}
+          {children || <Outlet />}
         </main>
         <Footer />
       </div>

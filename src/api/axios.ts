@@ -12,7 +12,17 @@ const getToken = () => {
     return null;
   }
 
-  return window.localStorage.getItem('token');
+  try {
+    const session = window.localStorage.getItem('tuitionlms-auth');
+    if (session) {
+      const parsed = JSON.parse(session);
+      return parsed.token;
+    }
+  } catch (e) {
+    console.error('Failed to parse auth session:', e);
+  }
+
+  return null;
 };
 
 api.interceptors.request.use((config) => {
@@ -30,7 +40,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      window.localStorage.removeItem('token');
+      window.localStorage.removeItem('tuitionlms-auth');
     }
 
     return Promise.reject(error);

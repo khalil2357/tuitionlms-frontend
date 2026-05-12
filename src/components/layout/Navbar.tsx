@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import {
   BookOpen,
@@ -28,11 +29,11 @@ const navItems = [
 /* ═══════════════════════════════════════════════════════════════ */
 const Navbar = () => {
   const { user, clearSession, hydrated } = useAuthStore();
+  const location = useLocation();
   const [mobileOpen,  setMobileOpen]  = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchOpen,  setSearchOpen]  = useState(false);
   const [theme,       setTheme]       = useState<'dark' | 'light'>('dark');
-  const [activeNav,   setActiveNav]   = useState('Home');
 
   /* DOM refs */
   const wrapperRef      = useRef<HTMLDivElement>(null);
@@ -222,8 +223,8 @@ const Navbar = () => {
           <div className="relative flex items-center justify-between gap-4 px-5 py-3">
 
             {/* ── Logo ── */}
-            <a
-              href="/"
+            <Link
+              to="/"
               className="group flex shrink-0 items-center gap-3 no-underline"
               onMouseEnter={e => linkIn(e.currentTarget)}
               onMouseLeave={e => linkOut(e.currentTarget)}
@@ -243,33 +244,36 @@ const Navbar = () => {
                   Tuition LMS
                 </p>
               </div>
-            </a>
+            </Link>
 
             {/* ── Desktop nav links ── */}
             <nav className="hidden items-center gap-0.5 md:flex">
-              {navItems.map(item => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setActiveNav(item.label)}
-                  onMouseEnter={e => linkIn(e.currentTarget)}
-                  onMouseLeave={e => linkOut(e.currentTarget)}
-                  className="relative flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors no-underline"
-                  style={{
-                    color:      activeNav === item.label ? 'var(--accent)' : 'var(--text-secondary)',
-                    background: activeNav === item.label ? 'rgba(139,92,246,0.12)' : 'transparent',
-                  }}
-                >
-                  <item.icon className="h-3.5 w-3.5" />
-                  {item.label}
-                  {activeNav === item.label && (
-                    <span
-                      className="absolute bottom-0.5 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full"
-                      style={{ background: 'var(--accent)' }}
-                    />
-                  )}
-                </a>
-              ))}
+              {navItems.map(item => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    onMouseEnter={e => linkIn(e.currentTarget)}
+                    onMouseLeave={e => linkOut(e.currentTarget)}
+                    className="relative flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors no-underline"
+                    style={{
+                      color:      isActive ? 'var(--accent)' : 'var(--text-secondary)',
+                      background: isActive ? 'rgba(139,92,246,0.12)' : 'transparent',
+                    }}
+                  >
+                    <item.icon className="h-3.5 w-3.5" />
+                    {item.label}
+                    {isActive && (
+                      <span
+                        className="absolute bottom-0.5 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full"
+                        style={{ background: 'var(--accent)' }}
+                      />
+                    )}
+                  </Link>
+                );
+              })}
             </nav>
 
             {/* ── Right actions ── */}
@@ -324,7 +328,7 @@ const Navbar = () => {
                     }
                   </div>
                   <span className="hidden text-xs font-medium text-[var(--text-primary)] sm:block">
-                    {isLoggedIn ? user.name?.split(' ')[0] : 'Sign in'}
+                    {isLoggedIn && user ? user.name?.split(' ')[0] : 'Sign in'}
                   </span>
                   <ChevronDown
                     className="hidden h-3.5 w-3.5 text-[var(--text-muted)] sm:block"
@@ -419,20 +423,27 @@ const Navbar = () => {
               ref={mobileMenuRef}
               className="border-t border-[var(--surface-border)] px-3 pb-3 pt-2 md:hidden"
             >
-              {navItems.map(item => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => { setActiveNav(item.label); setMobileOpen(false); }}
-                  className="flex items-center justify-between rounded-[0.85rem] px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] transition hover:bg-[rgba(139,92,246,0.1)] hover:text-[var(--text-primary)] no-underline"
-                >
-                  <div className="flex items-center gap-2">
-                    <item.icon className="h-4 w-4 text-[var(--accent)]" />
-                    {item.label}
-                  </div>
-                  <span className="text-[var(--accent)] text-xs">↗</span>
-                </a>
-              ))}
+              {navItems.map(item => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-between rounded-[0.85rem] px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] transition hover:bg-[rgba(139,92,246,0.1)] hover:text-[var(--text-primary)] no-underline"
+                    style={{
+                      color:      isActive ? 'var(--accent)' : 'var(--text-secondary)',
+                      background: isActive ? 'rgba(139,92,246,0.12)' : 'transparent',
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <item.icon className="h-4 w-4 text-[var(--accent)]" />
+                      {item.label}
+                    </div>
+                    <span className="text-[var(--accent)] text-xs">↗</span>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </header>
@@ -480,15 +491,15 @@ const Navbar = () => {
 
 /* ── Dropdown link helper ── */
 const DdLink = ({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) => (
-  <a
-    href={href}
+  <Link
+    to={href}
     className="flex items-center gap-3 rounded-[0.85rem] px-3 py-2.5 text-sm text-[var(--text-secondary)] transition hover:bg-[rgba(139,92,246,0.12)] hover:text-[var(--text-primary)] no-underline"
     onMouseEnter={e => gsap.to(e.currentTarget, { x: 3, duration: 0.15, ease: 'power2.out' })}
     onMouseLeave={e => gsap.to(e.currentTarget, { x: 0, duration: 0.15, ease: 'power2.out' })}
   >
     <span className="text-[var(--accent)]">{icon}</span>
     {label}
-  </a>
+  </Link>
 );
 
 export default Navbar;
