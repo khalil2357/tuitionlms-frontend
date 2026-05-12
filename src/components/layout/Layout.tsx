@@ -8,7 +8,10 @@ type LayoutProps = {
 
 const Layout = ({ children }: LayoutProps) => {
   return (
-    <div className="min-h-screen bg-[#1E1E1E] text-white transition-colors duration-500 dark:bg-[#1E1E1E]">
+    <div
+      className="min-h-screen transition-colors duration-500"
+      style={{ background: 'var(--page-bg)', color: 'var(--text-primary)' }}
+    >
       <a href="#main-content" className="sr-only focus:not-sr-only">
         Skip to content
       </a>

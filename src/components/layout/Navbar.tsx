@@ -1,257 +1,494 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import {
+  BookOpen,
   ChevronDown,
+  GraduationCap,
+  LayoutDashboard,
+  LogIn,
   LogOut,
   Menu,
   MoonStar,
   Search,
   SunMedium,
   UserCircle2,
+  Users,
+  X,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 
+/* ── nav items – real routes, no dummy data ── */
 const navItems = [
-  { label: 'Home', href: '#' },
-  { label: 'Courses', href: '#courses' },
-  { label: 'Instructors', href: '#instructors' },
-  { label: 'Pricing', href: '#pricing' },
+  { label: 'Home',        href: '/',            icon: BookOpen },
+  { label: 'Courses',     href: '/courses',     icon: GraduationCap },
+  { label: 'Instructors', href: '/instructors', icon: Users },
+  { label: 'Dashboard',   href: '/dashboard',   icon: LayoutDashboard },
 ];
 
+/* ═══════════════════════════════════════════════════════════════ */
 const Navbar = () => {
   const { user, clearSession, hydrated } = useAuthStore();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen,  setMobileOpen]  = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const profileMenuRef = useRef<HTMLDivElement | null>(null);
-  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
+  const [searchOpen,  setSearchOpen]  = useState(false);
+  const [theme,       setTheme]       = useState<'dark' | 'light'>('dark');
+  const [activeNav,   setActiveNav]   = useState('Home');
+
+  /* DOM refs */
+  const wrapperRef      = useRef<HTMLDivElement>(null);
+  const headerRef       = useRef<HTMLElement>(null);
+  const profileMenuRef  = useRef<HTMLDivElement>(null);
+  const mobileMenuRef   = useRef<HTMLDivElement>(null);
+  const searchOverlay   = useRef<HTMLDivElement>(null);
+  const searchInput     = useRef<HTMLInputElement>(null);
+
+  /* scroll state ref – avoids stale closure in scroll handler */
+  const scrolledRef = useRef(false);
+  /* timeline ref – built once */
+  const tlRef = useRef<gsap.core.Timeline | null>(null);
 
   const isLoggedIn = Boolean(user);
 
+  /* ── initials ── */
+  const initials = useMemo(() => {
+    if (!user?.name) return 'TL';
+    return user.name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
+  }, [user?.name]);
+
+  /* ── persist theme ── */
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem('tuitionlms-theme');
-    const preferredTheme = storedTheme === 'light' ? 'light' : 'dark';
-    setTheme(preferredTheme);
-    document.documentElement.classList.toggle('dark', preferredTheme === 'dark');
-    document.documentElement.classList.toggle('light', preferredTheme === 'light');
+    const stored = localStorage.getItem('tuitionlms-theme');
+    const pref   = stored === 'light' ? 'light' : 'dark';
+    setTheme(pref);
+    document.documentElement.classList.toggle('dark', pref === 'dark');
+    document.documentElement.classList.toggle('light', pref === 'light');
   }, []);
 
+  /* ── ONE-TIME entrance animation (mount only) ── */
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('[data-profile-menu]')) {
-        setProfileOpen(false);
+    if (!headerRef.current) return;
+    gsap.fromTo(
+      headerRef.current,
+      { y: -90, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.85, ease: 'expo.out', delay: 0.05 },
+    );
+  }, []); // empty dep → only on mount, never on nav-item click
+
+  /* ── Build GSAP timeline for pill ↔ full-width ── */
+  useEffect(() => {
+    if (!wrapperRef.current || !headerRef.current) return;
+
+    tlRef.current = gsap
+      .timeline({ paused: true })
+      /* wrapper: 1280 px pill  →  full viewport */
+      .to(wrapperRef.current, {
+        maxWidth: '100vw',
+        top:      0,
+        paddingLeft:  0,
+        paddingRight: 0,
+        paddingTop:   0,
+        duration: 0.52,
+        ease: 'power3.inOut',
+      }, 0)
+      /* header: 100 px radius  →  0 px */
+      .to(headerRef.current, {
+        borderRadius: '0px',
+        duration: 0.52,
+        ease: 'power3.inOut',
+      }, 0)
+      /* shadow deepens */
+      .to(headerRef.current, {
+        boxShadow: '0 6px 40px rgba(0,0,0,0.30), 0 1px 0 rgba(139,92,246,0.2)',
+        duration: 0.35,
+        ease: 'power2.out',
+      }, 0.18);
+
+    /* ── Scroll listener ── */
+    const onScroll = () => {
+      const isDown = window.scrollY > 40;
+      if (isDown === scrolledRef.current) return; // no change
+      scrolledRef.current = isDown;
+      if (isDown) {
+        tlRef.current?.play();
+      } else {
+        tlRef.current?.reverse();
       }
     };
 
-    window.addEventListener('click', handleClickOutside);
-    return () => window.removeEventListener('click', handleClickOutside);
-  }, []);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []); // empty dep → build once
 
+  /* ── Profile dropdown open animation ── */
   useEffect(() => {
-    if (!profileMenuRef.current) {
-      return;
+    if (profileOpen && profileMenuRef.current) {
+      gsap.fromTo(
+        profileMenuRef.current,
+        { y: -12, opacity: 0, scale: 0.94 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.3, ease: 'expo.out' },
+      );
     }
-
-    gsap.fromTo(
-      profileMenuRef.current,
-      { y: -12, opacity: 0, scale: 0.96 },
-      { y: 0, opacity: 1, scale: 1, duration: 0.28, ease: 'power3.out' }
-    );
   }, [profileOpen]);
 
+  /* ── Mobile menu open animation ── */
   useEffect(() => {
-    if (!mobileMenuRef.current) {
-      return;
+    if (mobileOpen && mobileMenuRef.current) {
+      gsap.fromTo(
+        mobileMenuRef.current,
+        { y: -16, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, ease: 'expo.out' },
+      );
     }
-
-    gsap.fromTo(
-      mobileMenuRef.current,
-      { y: -16, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.3, ease: 'power3.out' }
-    );
   }, [mobileOpen]);
 
-  const initials = useMemo(() => {
-    if (!user?.name) {
-      return 'TL';
+  /* ── Search overlay open animation ── */
+  useEffect(() => {
+    if (searchOpen && searchOverlay.current) {
+      gsap.fromTo(
+        searchOverlay.current,
+        { opacity: 0, scale: 0.97 },
+        { opacity: 1, scale: 1, duration: 0.28, ease: 'power3.out' },
+      );
+      setTimeout(() => searchInput.current?.focus(), 50);
     }
+  }, [searchOpen]);
 
-    return user.name
-      .split(' ')
-      .map((part) => part[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase();
-  }, [user?.name]);
+  /* ── Click-outside: close profile ── */
+  useEffect(() => {
+    const h = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('[data-profile-menu]')) {
+        setProfileOpen(false);
+      }
+    };
+    window.addEventListener('click', h);
+    return () => window.removeEventListener('click', h);
+  }, []);
 
+  /* ── Esc: close search ── */
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') setSearchOpen(false); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, []);
+
+  /* ── Toggle theme ── */
   const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    document.documentElement.classList.toggle('dark', nextTheme === 'dark');
-    document.documentElement.classList.toggle('light', nextTheme === 'light');
-    window.localStorage.setItem('tuitionlms-theme', nextTheme);
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    document.documentElement.classList.toggle('dark',  next === 'dark');
+    document.documentElement.classList.toggle('light', next === 'light');
+    localStorage.setItem('tuitionlms-theme', next);
+    gsap.fromTo('[data-theme-btn]',
+      { rotate: -25, scale: 0.75 },
+      { rotate: 0, scale: 1, duration: 0.45, ease: 'back.out(2.5)' },
+    );
   };
 
+  /* ── Hover helpers ── */
+  const hoverIn  = (el: EventTarget) => gsap.to(el, { scale: 1.08, duration: 0.2, ease: 'power2.out' });
+  const hoverOut = (el: EventTarget) => gsap.to(el, { scale: 1,    duration: 0.2, ease: 'power2.out' });
+  const linkIn   = (el: EventTarget) => gsap.to(el, { y: -2, duration: 0.18, ease: 'power2.out' });
+  const linkOut  = (el: EventTarget) => gsap.to(el, { y:  0, duration: 0.18, ease: 'power2.out' });
+
+  /* ════════════════════════════ JSX ═════════════════════════════ */
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--surface-border)] bg-[var(--surface)] backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setMobileOpen((value) => !value)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-soft)] text-[var(--text-primary)] transition hover:scale-105 hover:bg-[rgba(139,92,246,0.14)] md:hidden"
-            aria-label="Toggle menu"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-
-          <a href="#" className="group flex items-center gap-3 text-[var(--text-primary)] no-underline">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 via-[#8B5CF6] to-fuchsia-500 text-lg font-semibold shadow-[0_20px_50px_rgba(139,92,246,0.35)] transition-transform duration-300 group-hover:scale-105">
-              TL
-            </div>
-            <div className="leading-tight">
-              <p className="text-[0.65rem] uppercase tracking-[0.35em] text-[var(--text-muted)]">
-                Tuition LMS
-              </p>
-              <h1 className="font-['Bricolage_Grotesque',sans-serif] text-xl font-semibold text-[var(--text-primary)]">
-                Learn faster. Teach better.
-              </h1>
-            </div>
-          </a>
-        </div>
-
-        <nav className="hidden items-center gap-8 md:flex">
-          {navItems.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="navbar-link relative text-sm font-medium transition after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-0 after:bg-[#8B5CF6] after:transition-all hover:after:w-full"
-            >
-              {item.label}
-            </a>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            className="hidden items-center gap-2 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-soft)] px-4 py-2 text-sm text-[var(--text-secondary)] transition hover:bg-[rgba(139,92,246,0.12)] md:flex"
-          >
-            <Search className="h-4 w-4" />
-            Search
-          </button>
-
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-soft)] text-[var(--text-primary)] transition duration-300 hover:scale-105 hover:bg-[#8B5CF6]/20"
-            aria-label="Toggle theme"
-          >
-            {theme === 'dark' ? <SunMedium className="h-5 w-5" /> : <MoonStar className="h-5 w-5" />}
-          </button>
-
-          <div className="relative" data-profile-menu>
-            <button
-              type="button"
-              onClick={() => setProfileOpen((value) => !value)}
-              className="group flex items-center gap-3 rounded-[1.1rem] border border-[var(--surface-border)] bg-[var(--surface-soft)] px-2 py-2 text-left text-[var(--text-primary)] transition hover:scale-[1.01] hover:bg-[rgba(139,92,246,0.12)]"
-            >
-              <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#8B5CF6] to-fuchsia-500 text-sm font-semibold text-white shadow-lg shadow-violet-500/20">
-                {hydrated && isLoggedIn ? (
-                  user?.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
-                  ) : (
-                    initials
-                  )
-                ) : (
-                  <UserCircle2 className="h-6 w-6" />
-                )}
-              </div>
-
-              <div className="hidden sm:block">
-                <p className="text-xs uppercase tracking-[0.25em] text-[var(--text-muted)]">
-                  {isLoggedIn ? 'Profile' : 'Sign in'}
-                </p>
-                <p className="font-['Bricolage_Grotesque',sans-serif] text-sm font-semibold text-[var(--text-primary)]">
-                  {isLoggedIn ? user?.name : 'Login / Register'}
-                </p>
-              </div>
-
-              <ChevronDown className="hidden h-4 w-4 text-[var(--text-muted)] sm:block" />
-            </button>
-
-            {profileOpen && (
-                <div
-                  ref={profileMenuRef}
-                  className="absolute right-0 mt-3 w-72 overflow-hidden rounded-[1.5rem] border border-[var(--surface-border)] bg-[var(--surface-strong)] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl"
-                >
-                  <div className="rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-soft)] p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#8B5CF6] to-fuchsia-500 text-sm font-semibold text-white">
-                        {hydrated && isLoggedIn ? (
-                          user?.avatar ? (
-                            <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
-                          ) : (
-                            initials
-                          )
-                        ) : (
-                          <UserCircle2 className="h-6 w-6" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-['Bricolage_Grotesque',sans-serif] text-base font-semibold text-[var(--text-primary)]">
-                          {isLoggedIn ? user?.name : 'Sign in to continue'}
-                        </p>
-                        <p className="text-sm text-[var(--text-secondary)]">{isLoggedIn ? user?.email : 'Use your account to unlock the dashboard'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 space-y-2">
-                    <a
-                      href="#"
-                      className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm text-[var(--text-secondary)] transition hover:bg-[rgba(139,92,246,0.12)] hover:text-[var(--text-primary)]"
-                    >
-                      <span>My Profile</span>
-                      <UserCircle2 className="h-4 w-4" />
-                    </a>
-                    <button
-                      type="button"
-                      onClick={clearSession}
-                      className="flex w-full items-center justify-between rounded-2xl px-4 py-3 text-sm text-[var(--text-secondary)] transition hover:bg-[rgba(139,92,246,0.12)] hover:text-[var(--text-primary)]"
-                    >
-                      <span>{isLoggedIn ? 'Logout' : 'Login'}</span>
-                      <LogOut className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
-          </div>
-        </div>
-      </div>
-
-      {mobileOpen && (
+    <>
+      {/* ── Floating wrapper – pill container ── */}
+      <div
+        ref={wrapperRef}
+        className="fixed left-0 right-0 z-50 mx-auto"
+        style={{
+          maxWidth:     '1280px',
+          top:          '1rem',
+          paddingLeft:  '1rem',
+          paddingRight: '1rem',
+        }}
+      >
+        <header
+          ref={headerRef}
+          className="relative border border-[var(--surface-border)] bg-[var(--surface)] backdrop-blur-2xl"
+          style={{
+            borderRadius: '100px',
+            boxShadow: '0 4px 32px rgba(0,0,0,0.16), 0 0 0 1px rgba(139,92,246,0.1)',
+            opacity: 0, /* starts invisible — entrance animation drives it in */
+          }}
+        >
+          {/* inner glow accent */}
           <div
-            ref={mobileMenuRef}
-            className="border-t border-[var(--surface-border)] bg-[var(--surface-strong)] px-4 pb-4 md:hidden"
-          >
-            <div className="mx-auto max-w-7xl space-y-3 pt-4">
-              {navItems.map((item) => (
+            className="pointer-events-none absolute inset-0 rounded-[inherit]"
+            style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.09) 0%, transparent 65%)' }}
+          />
+
+          <div className="relative flex items-center justify-between gap-4 px-5 py-3">
+
+            {/* ── Logo ── */}
+            <a
+              href="/"
+              className="group flex shrink-0 items-center gap-3 no-underline"
+              onMouseEnter={e => linkIn(e.currentTarget)}
+              onMouseLeave={e => linkOut(e.currentTarget)}
+            >
+              <div
+                className="flex h-10 w-10 items-center justify-center rounded-[1.2rem] text-xs font-bold text-white"
+                style={{
+                  background: 'linear-gradient(135deg,#8B5CF6 0%,#a855f7 55%,#ec4899 100%)',
+                  boxShadow:  '0 6px 22px rgba(139,92,246,0.45)',
+                }}
+              >
+                TL
+              </div>
+              <div className="hidden sm:block leading-tight">
+                <p className="text-[0.58rem] uppercase tracking-[0.42em] text-[var(--text-muted)]">Platform</p>
+                <p className="font-['Bricolage_Grotesque',sans-serif] text-[0.95rem] font-semibold text-[var(--text-primary)]">
+                  Tuition LMS
+                </p>
+              </div>
+            </a>
+
+            {/* ── Desktop nav links ── */}
+            <nav className="hidden items-center gap-0.5 md:flex">
+              {navItems.map(item => (
                 <a
                   key={item.label}
                   href={item.href}
-                  className="navbar-link-mobile flex items-center justify-between rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-soft)] px-4 py-3 transition hover:bg-[rgba(139,92,246,0.12)]"
+                  onClick={() => setActiveNav(item.label)}
+                  onMouseEnter={e => linkIn(e.currentTarget)}
+                  onMouseLeave={e => linkOut(e.currentTarget)}
+                  className="relative flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors no-underline"
+                  style={{
+                    color:      activeNav === item.label ? 'var(--accent)' : 'var(--text-secondary)',
+                    background: activeNav === item.label ? 'rgba(139,92,246,0.12)' : 'transparent',
+                  }}
                 >
-                  <span>{item.label}</span>
-                  <span className="text-[#8B5CF6]">↗</span>
+                  <item.icon className="h-3.5 w-3.5" />
+                  {item.label}
+                  {activeNav === item.label && (
+                    <span
+                      className="absolute bottom-0.5 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full"
+                      style={{ background: 'var(--accent)' }}
+                    />
+                  )}
+                </a>
+              ))}
+            </nav>
+
+            {/* ── Right actions ── */}
+            <div className="flex items-center gap-2">
+
+              {/* Search button */}
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                onMouseEnter={e => hoverIn(e.currentTarget)}
+                onMouseLeave={e => hoverOut(e.currentTarget)}
+                className="hidden items-center gap-2 rounded-full border border-[var(--surface-border)] bg-[var(--surface-soft)] px-4 py-2 text-sm text-[var(--text-secondary)] md:flex"
+              >
+                <Search className="h-4 w-4" />
+                Search
+              </button>
+
+              {/* Theme */}
+              <button
+                data-theme-btn
+                type="button"
+                onClick={toggleTheme}
+                onMouseEnter={e => hoverIn(e.currentTarget)}
+                onMouseLeave={e => hoverOut(e.currentTarget)}
+                aria-label="Toggle theme"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--surface-border)] bg-[var(--surface-soft)] text-[var(--text-primary)]"
+              >
+                {theme === 'dark'
+                  ? <SunMedium className="h-4 w-4" />
+                  : <MoonStar  className="h-4 w-4" />
+                }
+              </button>
+
+              {/* Profile */}
+              <div className="relative" data-profile-menu>
+                <button
+                  type="button"
+                  onClick={() => setProfileOpen(v => !v)}
+                  onMouseEnter={e => hoverIn(e.currentTarget)}
+                  onMouseLeave={e => hoverOut(e.currentTarget)}
+                  className="flex items-center gap-2 rounded-full border border-[var(--surface-border)] bg-[var(--surface-soft)] p-1.5 pr-3"
+                >
+                  <div
+                    className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full text-[0.7rem] font-semibold text-white"
+                    style={{ background: 'linear-gradient(135deg,#8B5CF6,#ec4899)' }}
+                  >
+                    {hydrated && isLoggedIn
+                      ? user?.avatar
+                        ? <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                        : initials
+                      : <UserCircle2 className="h-4 w-4" />
+                    }
+                  </div>
+                  <span className="hidden text-xs font-medium text-[var(--text-primary)] sm:block">
+                    {isLoggedIn ? user.name?.split(' ')[0] : 'Sign in'}
+                  </span>
+                  <ChevronDown
+                    className="hidden h-3.5 w-3.5 text-[var(--text-muted)] sm:block"
+                    style={{ transition: 'transform 0.25s', transform: profileOpen ? 'rotate(180deg)' : 'rotate(0)' }}
+                  />
+                </button>
+
+                {/* Profile dropdown */}
+                {profileOpen && (
+                  <div
+                    ref={profileMenuRef}
+                    className="absolute right-0 mt-3 w-68 overflow-hidden rounded-[1.5rem] border border-[var(--surface-border)] bg-[var(--surface-strong)] p-2 shadow-[0_28px_72px_rgba(0,0,0,0.38)] backdrop-blur-2xl"
+                    style={{ minWidth: '260px' }}
+                  >
+                    {/* User card */}
+                    <div className="m-1 rounded-[1.1rem] border border-[var(--surface-border)] bg-[var(--surface-soft)] p-3.5">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-semibold text-white"
+                          style={{ background: 'linear-gradient(135deg,#8B5CF6,#ec4899)' }}
+                        >
+                          {hydrated && isLoggedIn
+                            ? user?.avatar
+                              ? <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                              : initials
+                            : <UserCircle2 className="h-5 w-5" />
+                          }
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
+                            {isLoggedIn ? user?.name : 'Welcome'}
+                          </p>
+                          <p className="truncate text-xs text-[var(--text-muted)]">
+                            {isLoggedIn ? user?.email : 'Sign in to access your account'}
+                          </p>
+                          {isLoggedIn && user?.role && (
+                            <span className="mt-1 inline-block rounded-full px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-widest text-white"
+                              style={{ background: 'var(--accent)' }}>
+                              {user.role}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Menu items */}
+                    <div className="mt-1 space-y-0.5 p-1">
+                      {isLoggedIn ? (
+                        <>
+                          <DdLink href="/dashboard" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
+                          <DdLink href="/profile"   icon={<UserCircle2     className="h-4 w-4" />} label="My Profile" />
+                          <DdLink href="/courses"   icon={<BookOpen        className="h-4 w-4" />} label="My Courses" />
+                          <div className="mx-2 my-2 h-px bg-[var(--surface-border)]" />
+                          <button
+                            type="button"
+                            onClick={() => { clearSession(); setProfileOpen(false); }}
+                            className="flex w-full items-center gap-3 rounded-[0.85rem] px-3 py-2.5 text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
+                            onMouseEnter={e => gsap.to(e.currentTarget, { x: 3, duration: 0.15, ease: 'power2.out' })}
+                            onMouseLeave={e => gsap.to(e.currentTarget, { x: 0, duration: 0.15, ease: 'power2.out' })}
+                          >
+                            <LogOut className="h-4 w-4" /> Sign Out
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <DdLink href="/login"    icon={<LogIn       className="h-4 w-4" />} label="Sign In" />
+                          <DdLink href="/register" icon={<UserCircle2 className="h-4 w-4" />} label="Create Account" />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile hamburger */}
+              <button
+                type="button"
+                onClick={() => setMobileOpen(v => !v)}
+                onMouseEnter={e => hoverIn(e.currentTarget)}
+                onMouseLeave={e => hoverOut(e.currentTarget)}
+                aria-label="Toggle menu"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--surface-border)] bg-[var(--surface-soft)] text-[var(--text-primary)] md:hidden"
+              >
+                {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+
+          {/* ── Mobile menu ── */}
+          {mobileOpen && (
+            <div
+              ref={mobileMenuRef}
+              className="border-t border-[var(--surface-border)] px-3 pb-3 pt-2 md:hidden"
+            >
+              {navItems.map(item => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => { setActiveNav(item.label); setMobileOpen(false); }}
+                  className="flex items-center justify-between rounded-[0.85rem] px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] transition hover:bg-[rgba(139,92,246,0.1)] hover:text-[var(--text-primary)] no-underline"
+                >
+                  <div className="flex items-center gap-2">
+                    <item.icon className="h-4 w-4 text-[var(--accent)]" />
+                    {item.label}
+                  </div>
+                  <span className="text-[var(--accent)] text-xs">↗</span>
                 </a>
               ))}
             </div>
+          )}
+        </header>
+      </div>
+
+      {/* ── Search Overlay ── */}
+      {searchOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-24"
+          style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)' }}
+          onClick={e => { if (e.target === e.currentTarget) setSearchOpen(false); }}
+        >
+          <div
+            ref={searchOverlay}
+            className="w-full max-w-xl overflow-hidden rounded-[1.5rem] border border-[var(--surface-border)] bg-[var(--surface-strong)] shadow-[0_40px_100px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+          >
+            <div className="flex items-center gap-3 p-4">
+              <Search className="h-5 w-5 shrink-0 text-[var(--accent)]" />
+              <input
+                ref={searchInput}
+                type="text"
+                placeholder="Search courses, instructors, topics…"
+                className="flex-1 bg-transparent text-base text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
+              />
+              <button
+                type="button"
+                onClick={() => setSearchOpen(false)}
+                className="rounded-full border border-[var(--surface-border)] p-1.5 text-[var(--text-muted)] transition hover:text-[var(--text-primary)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="border-t border-[var(--surface-border)] px-4 py-2.5 text-xs text-[var(--text-muted)]">
+              Press <kbd className="rounded bg-[var(--surface-soft)] px-1.5 py-0.5 text-[0.62rem]">Esc</kbd> to close
+            </div>
           </div>
-        )}
-    </header>
+        </div>
+      )}
+
+      {/* Page spacer — always 80px tall */}
+      <div style={{ height: '80px' }} />
+    </>
   );
 };
+
+/* ── Dropdown link helper ── */
+const DdLink = ({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) => (
+  <a
+    href={href}
+    className="flex items-center gap-3 rounded-[0.85rem] px-3 py-2.5 text-sm text-[var(--text-secondary)] transition hover:bg-[rgba(139,92,246,0.12)] hover:text-[var(--text-primary)] no-underline"
+    onMouseEnter={e => gsap.to(e.currentTarget, { x: 3, duration: 0.15, ease: 'power2.out' })}
+    onMouseLeave={e => gsap.to(e.currentTarget, { x: 0, duration: 0.15, ease: 'power2.out' })}
+  >
+    <span className="text-[var(--accent)]">{icon}</span>
+    {label}
+  </a>
+);
 
 export default Navbar;

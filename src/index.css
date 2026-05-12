@@ -24,7 +24,8 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* scroll-behavior: smooth; — managed by GSAP ScrollTo plugin */
+  scroll-behavior: auto;
 }
 
 body {
