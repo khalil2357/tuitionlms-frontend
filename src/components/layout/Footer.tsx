@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import {
   ArrowUp,
   BookOpen,
@@ -13,7 +14,7 @@ import {
   Users,
 } from 'lucide-react';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 /* ── Link groups ── */
 const platform = [
@@ -140,8 +141,9 @@ const Footer = () => {
     gsap.to(e.currentTarget, { scale: 1, y: 0, duration: 0.2, ease: 'power2.out' });
 
   /* ── Back to top ── */
-  const scrollTop = () =>
-    gsap.to(window, { scrollTo: 0, duration: 0.9, ease: 'expo.inOut' });
+  const scrollTop = () => {
+    gsap.to(window, { scrollTo: { y: 0 }, duration: 0.9, ease: 'expo.inOut' });
+  };
 
   /* ═══════════════ JSX ═══════════════ */
   return (
