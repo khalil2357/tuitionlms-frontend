@@ -126,7 +126,7 @@ const Navbar = () => {
             <a
               key={item.label}
               href={item.href}
-              className="relative text-sm font-medium text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-0 after:bg-[#8B5CF6] after:transition-all hover:after:w-full"
+              className="navbar-link relative text-sm font-medium transition after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-0 after:bg-[#8B5CF6] after:transition-all hover:after:w-full"
             >
               {item.label}
             </a>
@@ -171,9 +171,9 @@ const Navbar = () => {
 
               <div className="hidden sm:block">
                 <p className="text-xs uppercase tracking-[0.25em] text-[var(--text-muted)]">
-                  {isLoggedIn ? 'Profile' : 'Guest'}
+                  {isLoggedIn ? 'Profile' : 'Sign in'}
                 </p>
-                <p className="font-['Bricolage_Grotesque',sans-serif] text-sm font-semibold text-white">
+                <p className="font-['Bricolage_Grotesque',sans-serif] text-sm font-semibold text-[var(--text-primary)]">
                   {isLoggedIn ? user?.name : 'Login / Register'}
                 </p>
               </div>
@@ -241,7 +241,7 @@ const Navbar = () => {
                 <a
                   key={item.label}
                   href={item.href}
-                  className="flex items-center justify-between rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-soft)] px-4 py-3 text-[var(--text-primary)] transition hover:bg-[rgba(139,92,246,0.12)]"
+                  className="navbar-link-mobile flex items-center justify-between rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-soft)] px-4 py-3 transition hover:bg-[rgba(139,92,246,0.12)]"
                 >
                   <span>{item.label}</span>
                   <span className="text-[#8B5CF6]">↗</span>

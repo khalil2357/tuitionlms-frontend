@@ -35,15 +35,15 @@ const Footer = () => {
         <div className="max-w-xl">
           <div className="mb-5 inline-flex items-center gap-3 rounded-full border border-[var(--surface-border)] bg-[var(--surface-soft)] px-4 py-2 text-sm text-[var(--text-secondary)] backdrop-blur">
             <span className="h-2.5 w-2.5 rounded-full bg-[#8B5CF6] shadow-[0_0_18px_rgba(139,92,246,0.8)]" />
-            Tuition LMS stays with you after class
+            Built for course delivery, learner progress, and admin oversight
           </div>
 
           <h2 className="font-['Bricolage_Grotesque',sans-serif] text-3xl font-semibold leading-tight text-[var(--text-primary)] sm:text-4xl">
             Build momentum with a modern learning experience.
           </h2>
           <p className="mt-4 max-w-lg text-sm leading-7 text-[var(--text-secondary)] sm:text-base">
-            Crafted for students, instructors, and teams who want a clean, premium, and responsive
-            learning platform with smooth interactions.
+            One product for students, instructors, and administrators with polished navigation,
+            responsive layout, and motion-first interactions.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
@@ -61,7 +61,7 @@ const Footer = () => {
         </div>
 
         <div>
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-[var(--text-muted)]">Quick links</p>
+          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-[var(--text-muted)]">Platform</p>
           <div className="space-y-3 text-sm text-[var(--text-secondary)]">
             <a className="block transition hover:text-white" href="#dashboard">
               Dashboard
@@ -79,7 +79,7 @@ const Footer = () => {
         </div>
 
         <div>
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-[var(--text-muted)]">Follow</p>
+          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-[var(--text-muted)]">Connect</p>
           <div className="flex flex-wrap gap-3">
             {['GitHub', 'Email', 'YouTube'].map((label) => (
               <button
@@ -94,7 +94,7 @@ const Footer = () => {
           </div>
 
           <div className="mt-8 rounded-[1.5rem] border border-[var(--surface-border)] bg-[var(--surface-soft)] p-4 backdrop-blur">
-            <p className="text-sm text-[var(--text-secondary)]">Ready to launch?</p>
+            <p className="text-sm text-[var(--text-secondary)]">Need help or a platform walkthrough?</p>
             <a
               href="#top"
               className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#8B5CF6] px-4 py-2 text-sm font-medium text-white shadow-[0_16px_35px_rgba(139,92,246,0.35)] transition duration-300 hover:scale-[1.02] hover:bg-[#9f75ff]"

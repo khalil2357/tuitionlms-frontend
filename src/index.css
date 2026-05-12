@@ -81,3 +81,19 @@ a {
 .light #root {
   color: var(--text-primary);
 }
+
+.navbar-link {
+  color: var(--text-secondary) !important;
+}
+
+.navbar-link:hover {
+  color: var(--text-primary) !important;
+}
+
+.navbar-link-mobile {
+  color: var(--text-primary) !important;
+}
+
+.navbar-link-mobile:hover {
+  color: var(--text-primary) !important;
+}
