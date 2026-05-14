@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import gsap from 'gsap';
-import { Mail, Lock, User, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Loader2, ArrowRight, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { authService } from '../services/auth.service';
 
 const Register = () => {
@@ -11,6 +11,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showToast, setShowToast] = useState(false);
   const navigate = useNavigate();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -40,8 +41,11 @@ const Register = () => {
 
     try {
       await authService.registerStudent({ name, email, password });
-      // Registration successful, navigate to login
-      navigate('/login');
+      setShowToast(true);
+      // Wait for 2.5 seconds to show toast before navigating
+      setTimeout(() => {
+        navigate('/login');
+      }, 2500);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
@@ -165,6 +169,17 @@ const Register = () => {
           </p>
         </form>
       </div>
+
+      {/* Success Toast */}
+      {showToast && (
+        <div className="fixed bottom-8 right-8 z-[100] flex animate-in slide-in-from-bottom-5 fade-in duration-500 items-center gap-3 rounded-2xl border border-green-500/20 bg-green-500/10 px-5 py-4 text-green-400 shadow-[0_8px_30px_rgba(34,197,94,0.12)] backdrop-blur-xl">
+          <CheckCircle className="h-5 w-5" />
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-[var(--text-primary)]">Registration Successful</span>
+            <span className="text-xs opacity-90">Redirecting to login...</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

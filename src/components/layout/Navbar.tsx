@@ -15,6 +15,7 @@ import {
   UserCircle2,
   Users,
   X,
+  Shield,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 
@@ -136,8 +137,8 @@ const Navbar = () => {
     if (mobileOpen && mobileMenuRef.current) {
       gsap.fromTo(
         mobileMenuRef.current,
-        { y: -16, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.3, ease: 'expo.out' },
+        { x: '100%', opacity: 0 },
+        { x: '0%', opacity: 1, duration: 0.4, ease: 'power3.out' },
       );
     }
   }, [mobileOpen]);
@@ -378,6 +379,9 @@ const Navbar = () => {
                     <div className="mt-1 space-y-0.5 p-1">
                       {isLoggedIn ? (
                         <>
+                          {user?.role === 'ADMIN' && (
+                            <DdLink href="/admin" icon={<Shield className="h-4 w-4" />} label="Admin Panel" />
+                          )}
                           <DdLink href="/dashboard" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
                           <DdLink href="/profile"   icon={<UserCircle2     className="h-4 w-4" />} label="My Profile" />
                           <DdLink href="/courses"   icon={<BookOpen        className="h-4 w-4" />} label="My Courses" />
@@ -417,12 +421,45 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* ── Mobile menu ── */}
-          {mobileOpen && (
-            <div
-              ref={mobileMenuRef}
-              className="border-t border-[var(--surface-border)] px-3 pb-3 pt-2 md:hidden"
-            >
+          {/* Mobile menu removed from header - now a sidebar below */}
+        </header>
+      </div>
+
+      {/* ── Mobile Sidebar ── */}
+      {mobileOpen && (
+        <>
+          <div 
+            className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm md:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div
+            ref={mobileMenuRef}
+            className="fixed top-0 right-0 bottom-0 z-[70] w-[280px] border-l border-[var(--surface-border)] bg-[var(--surface-strong)] p-6 shadow-2xl md:hidden"
+          >
+            <div className="mb-8 flex items-center justify-between">
+              <span className="font-bold text-[var(--text-primary)]">Menu</span>
+              <button 
+                onClick={() => setMobileOpen(false)}
+                className="rounded-full bg-[var(--surface-soft)] p-2 text-[var(--text-muted)] transition hover:text-[var(--text-primary)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-2">
+              {user?.role === 'ADMIN' && (
+                <Link
+                  to="/admin"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition hover:bg-[rgba(139,92,246,0.1)] hover:text-[var(--text-primary)] no-underline"
+                  style={{
+                    color:      location.pathname === '/admin' ? 'var(--accent)' : 'var(--text-secondary)',
+                    background: location.pathname === '/admin' ? 'rgba(139,92,246,0.12)' : 'transparent',
+                  }}
+                >
+                  <Shield className="h-5 w-5 text-[var(--accent)]" />
+                  Admin Panel
+                </Link>
+              )}
               {navItems.map(item => {
                 const isActive = location.pathname === item.href;
                 return (
@@ -430,24 +467,21 @@ const Navbar = () => {
                     key={item.label}
                     to={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center justify-between rounded-[0.85rem] px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] transition hover:bg-[rgba(139,92,246,0.1)] hover:text-[var(--text-primary)] no-underline"
+                    className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition hover:bg-[rgba(139,92,246,0.1)] hover:text-[var(--text-primary)] no-underline"
                     style={{
                       color:      isActive ? 'var(--accent)' : 'var(--text-secondary)',
                       background: isActive ? 'rgba(139,92,246,0.12)' : 'transparent',
                     }}
                   >
-                    <div className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4 text-[var(--accent)]" />
-                      {item.label}
-                    </div>
-                    <span className="text-[var(--accent)] text-xs">↗</span>
+                    <item.icon className="h-5 w-5 text-[var(--accent)]" />
+                    {item.label}
                   </Link>
                 );
               })}
             </div>
-          )}
-        </header>
-      </div>
+          </div>
+        </>
+      )}
 
       {/* ── Search Overlay ── */}
       {searchOpen && (
