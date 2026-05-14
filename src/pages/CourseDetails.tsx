@@ -87,7 +87,10 @@ const CourseDetails = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[var(--page-bg)] pb-32">
+    <div className="relative min-h-screen bg-[var(--page-bg)] pb-32 overflow-hidden -mt-20">
+      {/* Dynamic Background Blobs */}
+      <div className="absolute top-1/4 -left-20 w-[600px] h-[600px] bg-[var(--accent)]/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-[var(--accent)]/5 rounded-full blur-[120px] pointer-events-none" />
       {/* Hero Section */}
       <div className="relative w-full h-[60vh] lg:h-[70vh] bg-black overflow-hidden">
         <img 
@@ -106,7 +109,7 @@ const CourseDetails = () => {
             </button>
         </div>
 
-        <div className="absolute top-32 left-6 sm:left-10 md:left-20 max-w-4xl space-y-6">
+        <div className="absolute top-48 left-6 sm:left-10 md:left-20 max-w-4xl space-y-6">
            <Link to="/courses" className="inline-flex items-center gap-2 text-[var(--accent)] text-[10px] font-black uppercase tracking-widest hover:translate-x-[-4px] transition-all">
              <ArrowLeft className="h-4 w-4" />
              Catalog Nodes

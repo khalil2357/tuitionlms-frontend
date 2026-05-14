@@ -67,7 +67,13 @@ const Courses = () => {
   });
 
   return (
-    <div ref={containerRef} className="min-h-screen pt-32 pb-20 px-6 sm:px-10 max-w-7xl mx-auto space-y-16">
+    <div ref={containerRef} className="relative min-h-screen pt-32 pb-20 overflow-hidden">
+      {/* Dynamic Background Blobs */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[var(--accent)]/10 rounded-full blur-[120px] pointer-events-none animate-pulse" />
+      <div className="absolute top-1/3 -right-20 w-[400px] h-[400px] bg-[var(--accent)]/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 -left-20 w-[600px] h-[600px] bg-[var(--accent)]/10 rounded-full blur-[150px] pointer-events-none" />
+
+      <div className="relative z-10 px-6 sm:px-10 max-w-7xl mx-auto space-y-16">
       {/* Hero Header */}
       <div className="space-y-6 max-w-3xl">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[var(--accent)] text-[10px] font-black uppercase tracking-widest animate-pulse">
@@ -246,7 +252,8 @@ const Courses = () => {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default Courses;
