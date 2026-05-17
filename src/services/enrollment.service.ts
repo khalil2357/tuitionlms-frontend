@@ -10,4 +10,9 @@ export const enrollmentService = {
     const { data } = await api.get('/enrollments/my-enrollments');
     return data;
   },
+
+  updateProgress: async (enrollmentId: string, progress: number) => {
+    const { data } = await api.patch(`/enrollments/${enrollmentId}/progress`, { progress });
+    return data;
+  },
 };

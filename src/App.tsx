@@ -3,10 +3,12 @@ import Layout from './components/layout/Layout';
 import Courses from './pages/Courses';
 import CourseDetails from './pages/CourseDetails';
 import Checkout from './pages/Checkout';
+import CoursePlayer from './pages/CoursePlayer';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Accounts from './pages/Accounts';
 import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
@@ -18,9 +20,11 @@ function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:slug" element={<CourseDetails />} />
           <Route path="/checkout/:slug" element={<Checkout />} />
+          <Route path="/player/:slug" element={<CoursePlayer />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/accounts" element={<Accounts />} />
         </Route>
         <Route path="/admin" element={<AdminDashboard />} />
 
