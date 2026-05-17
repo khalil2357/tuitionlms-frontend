@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { 
@@ -26,6 +26,8 @@ gsap.registerPlugin(ScrollTrigger);
 
 const CourseDetails = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuthStore();
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -85,6 +87,17 @@ const CourseDetails = () => {
       <Link to="/courses" className="px-8 py-3 bg-[var(--accent)] rounded-xl text-[10px] font-black uppercase tracking-widest text-white">Back to Catalog</Link>
     </div>
   );
+
+  const handleEnrollNow = () => {
+    if (!slug) return;
+
+    if (!user) {
+      navigate('/login', { state: { returnTo: location.pathname } });
+      return;
+    }
+
+    navigate(`/checkout/${slug}`);
+  };
 
   return (
     <div className="relative min-h-screen bg-[var(--page-bg)] pb-32 overflow-hidden -mt-20">
@@ -254,8 +267,11 @@ const CourseDetails = () => {
               </div>
 
               <div className="space-y-3">
-                <button className="w-full py-5 rounded-[1.5rem] bg-[var(--accent)] text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-[var(--accent-glow)] hover:scale-105 active:scale-95 transition-all">
-                  Initialize Curriculum
+                <button
+                  onClick={handleEnrollNow}
+                  className="w-full py-5 rounded-[1.5rem] bg-[var(--accent)] text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-[var(--accent-glow)] hover:scale-105 active:scale-95 transition-all"
+                >
+                  Enroll Now
                 </button>
                 <button className="w-full py-5 rounded-[1.5rem] border border-[var(--surface-border)] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[var(--surface-soft)] transition-all">
                   Try Preview Nodes

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import { Mail, Lock, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { authService } from '../services/auth.service';
@@ -12,7 +12,9 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const setSession = useAuthStore((state) => state.setSession);
+  const returnTo = (location.state as { returnTo?: string } | null)?.returnTo;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -42,7 +44,7 @@ const Login = () => {
     try {
       const data = await authService.login({ email, password });
       setSession(data.access_token, data.user);
-      navigate('/dashboard');
+      navigate(returnTo || '/dashboard', { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {

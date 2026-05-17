@@ -149,7 +149,7 @@ const Footer = () => {
   return (
     <footer
       ref={footerRef}
-      className="relative overflow-hidden border-t border-[var(--surface-border)] bg-[var(--surface-strong)]"
+      className="site-chrome relative overflow-hidden border-t border-[var(--surface-border)] bg-[var(--surface-strong)]"
     >
       {/* ── Background glow orb ── */}
       <div

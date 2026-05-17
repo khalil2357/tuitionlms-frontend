@@ -208,7 +208,7 @@ const Navbar = () => {
       >
         <header
           ref={headerRef}
-          className="relative border border-[var(--surface-border)] bg-[var(--surface)] backdrop-blur-2xl"
+          className="site-chrome relative border border-[var(--surface-border)] bg-[var(--surface)] backdrop-blur-2xl"
           style={{
             borderRadius: '100px',
             boxShadow: '0 4px 32px rgba(0,0,0,0.16), 0 0 0 1px rgba(139,92,246,0.1)',

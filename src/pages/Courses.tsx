@@ -3,11 +3,8 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { 
   Search, 
-  Filter, 
   BookOpen, 
-  Clock, 
   Star, 
-  ChevronRight, 
   Layers,
   ArrowRight,
   TrendingUp,
@@ -59,6 +56,25 @@ const Courses = () => {
       );
     }
   }, [loading, selectedCategory, search]);
+
+  const updateLiquidCursor = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    const card = event.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    card.style.setProperty('--mouse-x', `${x}px`);
+    card.style.setProperty('--mouse-y', `${y}px`);
+  };
+
+  const activateLiquidCursor = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    updateLiquidCursor(event);
+    event.currentTarget.style.setProperty('--liquid-opacity', '1');
+  };
+
+  const deactivateLiquidCursor = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.currentTarget.style.setProperty('--liquid-opacity', '0');
+  };
 
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(search.toLowerCase());
@@ -145,8 +161,30 @@ const Courses = () => {
             <Link 
               to={`/courses/${course.slug}`} 
               key={course.id}
-              className="group relative flex flex-col h-full rounded-[2.5rem] border border-[var(--surface-border)] bg-[var(--surface-strong)]/40 overflow-hidden hover:border-[var(--accent)] transition-all hover:-translate-y-2 hover:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] shadow-xl"
+              onMouseMove={updateLiquidCursor}
+              onMouseEnter={activateLiquidCursor}
+              onMouseLeave={deactivateLiquidCursor}
+              style={{
+                ['--mouse-x' as any]: '50%',
+                ['--mouse-y' as any]: '50%',
+                ['--liquid-opacity' as any]: 0,
+              }}
+              className="liquid-hover course-card group relative flex h-full flex-col overflow-hidden rounded-[2.5rem] border border-[var(--surface-border)] bg-[var(--surface-strong)]/40 shadow-xl transition-all hover:-translate-y-2 hover:border-cyan-300/40 hover:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)]"
             >
+              <div
+                className="absolute inset-0 opacity-[var(--liquid-opacity)] transition-opacity duration-300 pointer-events-none"
+                style={{
+                  background:
+                    'radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(34,211,238,0.45), transparent 26%), radial-gradient(circle at calc(var(--mouse-x) + 70px) calc(var(--mouse-y) + 50px), rgba(217,70,239,0.22), transparent 22%), radial-gradient(circle at calc(var(--mouse-x) - 40px) calc(var(--mouse-y) - 30px), rgba(251,191,36,0.16), transparent 18%)',
+                  filter: 'blur(18px)',
+                  mixBlendMode: 'screen',
+                }}
+              />
+              <div className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(34,211,238,0.06),rgba(217,70,239,0.05),rgba(251,191,36,0.04))]" />
+                <div className="absolute -inset-px rounded-[2.5rem] border border-cyan-300/20 shadow-[inset_0_0_40px_rgba(34,211,238,0.12)]" />
+              </div>
+
               {/* Image Container */}
               <div className="relative aspect-[16/10] overflow-hidden">
                 <img 
@@ -154,20 +192,21 @@ const Courses = () => {
                   alt={course.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity group-hover:opacity-40" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_var(--mouse-x)_var(--mouse-y),rgba(255,255,255,0.12),transparent_18%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 
                 <div className="absolute top-6 left-6 flex items-center gap-2">
-                  <div className="px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[9px] font-black uppercase tracking-widest">
+                  <div className="px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-cyan-300/20 text-white text-[9px] font-black uppercase tracking-widest shadow-[0_0_24px_rgba(34,211,238,0.12)]">
                     {course.category?.name || 'Academic'}
                   </div>
                 </div>
 
                 <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between">
-                   <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/40 backdrop-blur-md border border-white/10">
+                   <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/40 backdrop-blur-md border border-cyan-300/15 shadow-[0_0_18px_rgba(34,211,238,0.08)]">
                       <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
                       <span className="text-[10px] font-bold text-white">4.9 (2k+)</span>
                    </div>
-                   <div className="text-xl font-black text-white">
+                   <div className="text-xl font-black text-white drop-shadow-[0_0_12px_rgba(34,211,238,0.2)]">
                       {course.price > 0 ? `$${course.price}` : 'Free'}
                    </div>
                 </div>
@@ -176,7 +215,7 @@ const Courses = () => {
               {/* Content */}
               <div className="p-8 space-y-6 flex-1 flex flex-col">
                 <div className="space-y-3 flex-1">
-                  <h3 className="text-xl font-extrabold text-[var(--text-primary)] leading-tight tracking-tight line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                  <h3 className="text-xl font-extrabold text-[var(--text-primary)] leading-tight tracking-tight line-clamp-2 transition-colors group-hover:text-cyan-200">
                     {course.title}
                   </h3>
                   <p className="text-[var(--text-muted)] text-[11px] font-bold leading-relaxed line-clamp-2">
@@ -186,7 +225,7 @@ const Courses = () => {
 
                 <div className="pt-6 border-t border-[var(--surface-border)] flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-[var(--surface-soft)] border border-[var(--surface-border)] flex items-center justify-center overflow-hidden">
+                    <div className="h-8 w-8 rounded-full bg-[var(--surface-soft)] border border-cyan-300/15 flex items-center justify-center overflow-hidden shadow-[0_0_18px_rgba(34,211,238,0.08)]">
                       {course.instructor?.avatar ? (
                         <img src={course.instructor.avatar} className="w-full h-full object-cover" />
                       ) : (
@@ -210,7 +249,7 @@ const Courses = () => {
               
               {/* Hover Arrow Overlay */}
               <div className="absolute bottom-8 right-8 translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
-                <div className="h-10 w-10 rounded-full bg-[var(--accent)] text-white flex items-center justify-center shadow-lg shadow-[var(--accent-glow)]">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-400 via-fuchsia-500 to-amber-300 text-[#050816] flex items-center justify-center shadow-[0_0_24px_rgba(34,211,238,0.22)]">
                   <ArrowRight className="h-5 w-5" />
                 </div>
               </div>
