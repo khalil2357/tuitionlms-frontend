@@ -383,7 +383,7 @@ const Navbar = () => {
                             <DdLink href="/admin" icon={<Shield className="h-4 w-4" />} label="Admin Panel" />
                           )}
                           <DdLink href="/dashboard" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
-                          <DdLink href="/profile"   icon={<UserCircle2     className="h-4 w-4" />} label="My Profile" />
+                          <DdLink href="/accounts"  icon={<UserCircle2     className="h-4 w-4" />} label="My Account" />
                           <DdLink href="/courses"   icon={<BookOpen        className="h-4 w-4" />} label="My Courses" />
                           <div className="mx-2 my-2 h-px bg-[var(--surface-border)]" />
                           <button
